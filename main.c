@@ -217,7 +217,7 @@ void lermemoria(t_Fila FilaCache, t_bloco Blocos[], t_celula Celulas[])
 
     while ((cont < 2048) && (achou != 1))
     {
-        for (int hh = 0; hh < TAMST; hh++)
+     for (int hh = 0; hh < TAMST; hh++)
         {
             if (endereco[hh] == Celulas[cont].endereco[hh])
             {
@@ -232,13 +232,12 @@ void lermemoria(t_Fila FilaCache, t_bloco Blocos[], t_celula Celulas[])
         {
             num = 0;
         }
-        cont++;
     }
     if (achou == 1)
         printf("\ndeu boa.\n");
     else
     {
-        printf("deu ruim.\n");
+        printf("\ndeu ruim.\n");
     }
     getchar();
     getchar();
