@@ -294,7 +294,7 @@ void lermemoria(t_Fila FilaCache, t_celula Celulas[])
     getchar();
 }
 
-void escreverMemoria(t_Fila *Fila, t_quadro *MemoCache, t_bloco *Blocos ){
+void escreverMemoria(t_Fila Fila, t_quadro *MemoCache, t_bloco *Blocos ){
 		TELA;
 		char conteudo,endereco[TAMST];
 		int disponivelnacache;
@@ -308,11 +308,23 @@ void escreverMemoria(t_Fila *Fila, t_quadro *MemoCache, t_bloco *Blocos ){
 		printf("\nConteudo inserido: %c", conteudo);
 		printf("\nEndereço digitado: %s", endereco);
 		disponivelnacache= buscaemCache(Fila, endereco);
-
+		
 		if(disponivelnacache ==1 ){
 			printf("\nDá para editar em cache");
 		} else {
-				printf("\nEndereço nao ta na cache");
+			int bloco;
+			int achouBloco=0;
+			 int  contBloco=0;
+				while(achouBloco==0 && contBloco<512){
+					for(int contCelulas=0; contCelulas < 4 ; contCelulas++){
+						if ((stringCompa(endereco, Blocos[contBloco].celula_bloco[contCelulas].endereco, TAMST)) == 1)
+						{
+							achouBloco=1;
+
+						}
+					}
+ 					contBloco++;
+				}
 		}
 
 		getchar();
@@ -386,7 +398,7 @@ int main(void)
             lermemoria(Fila,  MemPrincipal);
             break;
         case 2:
-						escreverMemoria(&Fila, MemCache, Bloco);
+						escreverMemoria(Fila, MemCache, Bloco);
             break;
         case 3:
             break;
