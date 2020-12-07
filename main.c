@@ -220,48 +220,101 @@ int stringCompa(char string1[], char string2[], int tam)
     }
     return achou;
 }
-
-void lermemoria(t_Fila FilaCache, t_bloco Blocos[], t_quadro MemCache[], t_celula Celulas[])
-{
-    int achou, cont, num;
-    achou = cont = num = 0;
-    char endereco[TAMST];
-    fflush(stdin);
-    printf("Digite o Endereco a ser buscado: ");
-    scanf("%s", endereco);
-    printf("\nEndereço digitado: %s", endereco);
-    fflush(stdin);
-
-    cont = 0;
-    int contCelCache = 0;
-    achou = 0;
-    while ((contCelCache < 64) && (achou != 1))
+int  buscaemCache(t_Fila FilaCache, char endereco []){
+	 int achou, cont,  contCelCache;
+    achou = cont  = contCelCache = 0;
+	 while ((contCelCache < 64) && (achou == 0))
     {
         for (int contFila = 0; contFila < TAM; contFila++)
         {
             for (int contBloco = 0; contBloco < 4; contBloco++)
             {
-                achou = stringCompa(endereco, FilaCache.linha_quadro[contFila].bloco_cache.celula_bloco[contBloco].endereco, TAMST);
+                if (stringCompa(endereco, (FilaCache).linha_quadro[contFila].bloco_cache.celula_bloco[contBloco].endereco, TAMST) == 1)
+                {
+                    achou = 1;
+												printf("O conteudo do endereço é: %c \n",  (FilaCache).linha_quadro[contFila].bloco_cache.celula_bloco[contBloco].conteudo);
+                }
                 contCelCache++;
             }
         }
     }
-    achou == 1 ? printf("\n\n achou na cache\n\n") : printf("\n\n Não achou na cache\n\n");
+		return achou;
+}
 
-    while ((cont < 2048) && (achou != 1))
-    {
-        achou = stringCompa(endereco, Celulas[cont].endereco, TAMST);
-        cont++;
-    }
+int bucaemMP(t_celula Celulas[], char endereco []){
+
+	 int achou, cont;
+    achou = cont = 0;
+	 	while ((cont < 2048) && (achou != 1))
+        {
+            achou = stringCompa(endereco, Celulas[cont].endereco, TAMST);
+						if(achou ==1){
+							printf("O conteudo do endereço é: %c \n", Celulas[cont].conteudo);
+						}
+            cont++;
+        }
+	
+		return achou;
+}
+
+void lermemoria(t_Fila FilaCache, t_celula Celulas[])
+{
+		TELA;
+    int achou, cont, num, contCelCache;
+    achou = cont = num = contCelCache = 0;
+    char endereco[TAMST];
+    fflush(stdin);
+    printf("Digite o Endereco a ser buscado: ");
+    scanf("%s", endereco);
+    printf("Endereço digitado: %s\n", endereco);
+    fflush(stdin);
+
+ 		achou= buscaemCache(FilaCache, endereco);
 
     if (achou == 1)
-        printf("\ndeu boa.\n");
+    {
+        printf("\nEndereço foi encontrado em cache\n");
+			
+    }
     else
     {
-        printf("\ndeu ruim.\n");
+			achou = bucaemMP(Celulas, endereco);
+       
+        if (achou == 1)
+        {
+            printf("\nEndereço não foi encontrado em cache, mas foi encontrdo na memória principal.\n");
+        }
+        else
+        {
+            printf("\nEndereço não foi encontrado em nenhum lugar, favor conferir o endereço digitado.\n");
+        }
     }
+
     getchar();
     getchar();
+}
+
+void escreverMemoria(t_Fila *Fila, t_quadro *MemoCache, t_bloco *Blocos ){
+		TELA;
+		char conteudo;
+		char endereco[TAMST];
+		int disponivelnacache;
+		printf("Tá dentro do Escrever Memória\n");
+		printf("\n\nDigite o conteudo que deseja inserir(limitado 1 caracter): ");
+		fflush(stdin);
+		scanf(" %c", &conteudo);
+		printf("Difite o endereco que deseja editar(limitado 11 caracter): ");
+		fflush(stdin);
+  	scanf("%s", endereco);
+		printf("\nConteudo inserido: %c", conteudo);
+		printf("\nEndereço digitado: %s", endereco);
+		disponivelnacache=buscaemCache(Fila,  endereco [])
+		if(disponivelnacache ==1 ){
+			printf("Dá para editar em cache");
+		}
+
+		getchar();
+		getchar();
 }
 
 int main(void)
@@ -293,13 +346,13 @@ int main(void)
     }
 
     // Iniciar Cache
-    int quadro = 0;
+
     for (int i = 0; i < 16; i++)
     {
         MemCache[i].alterado = 0;
         MemCache[i].contador_de_acesso = 0;
 
-        for (quadro = 0; quadro < 4; quadro++)
+        for (int quadro = 0; quadro < 4; quadro++)
         {
             MemCache[i].bloco_cache =
                 Bloco[i];
@@ -328,9 +381,10 @@ int main(void)
         case 0:
             exit(0);
         case 1:
-            lermemoria(Fila, Bloco, MemCache, MemPrincipal);
+            lermemoria(Fila,  MemPrincipal);
             break;
         case 2:
+						escreverMemoria(&Fila, MemCache, Bloco);
             break;
         case 3:
             break;

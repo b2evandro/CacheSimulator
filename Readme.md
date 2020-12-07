@@ -1,18 +1,17 @@
 **Trabalho 2**
-Vencimento
-Tempo restante: 4 dias 8 horas
-Simulador de memória cache
+
+*Simulador de memória cache*
 
 Participantes por grupo: 2
 
 Politica de Mapeamento Direto:
 1 -  Direto
-2 - Associativo
+**2 - Associativo**
 3 - Associativo por conjunto
 
 -- Politica de escrita
 1. Write - Through
-2. Write - Back
+**2. Write - Back**
 
 -- Politica de substituição
 1 - LRU
