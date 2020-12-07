@@ -204,7 +204,24 @@ void conta_erros()
     fail++;
 }
 
-void lermemoria(t_Fila FilaCache, t_bloco Blocos[], t_celula Celulas[])
+int stringCompa(char string1[], char string2[], int tam)
+{
+    int num = 0, achou = 0;
+    for (int hh = 0; hh < tam; hh++)
+    {
+        if (string1[hh] == string2[hh])
+        {
+            num++;
+        }
+    }
+    if (num == TAMST)
+    {
+        achou = 1;
+    }
+    return achou;
+}
+
+void lermemoria(t_Fila FilaCache, t_bloco Blocos[], t_quadro MemCache[], t_celula Celulas[])
 {
     int achou, cont, num;
     achou = cont = num = 0;
@@ -215,24 +232,28 @@ void lermemoria(t_Fila FilaCache, t_bloco Blocos[], t_celula Celulas[])
     printf("\nEndereço digitado: %s", endereco);
     fflush(stdin);
 
-    while ((cont < 2048) && (achou != 1))
+    cont = 0;
+    int contCelCache = 0;
+    achou = 0;
+    while ((contCelCache < 64) && (achou != 1))
     {
-     for (int hh = 0; hh < TAMST; hh++)
+        for (int contFila = 0; contFila < TAM; contFila++)
         {
-            if (endereco[hh] == Celulas[cont].endereco[hh])
+            for (int contBloco = 0; contBloco < 4; contBloco++)
             {
-                num++;
+                achou = stringCompa(endereco, FilaCache.linha_quadro[contFila].bloco_cache.celula_bloco[contBloco].endereco, TAMST);
+                contCelCache++;
             }
         }
-        if (num == TAMST)
-        {
-            achou = 1;
-        }
-        else
-        {
-            num = 0;
-        }
     }
+    achou == 1 ? printf("\n\n achou na cache\n\n") : printf("\n\n Não achou na cache\n\n");
+
+    while ((cont < 2048) && (achou != 1))
+    {
+        achou = stringCompa(endereco, Celulas[cont].endereco, TAMST);
+        cont++;
+    }
+
     if (achou == 1)
         printf("\ndeu boa.\n");
     else
@@ -295,7 +316,7 @@ int main(void)
         printf("\nMenu");
         printf("\n\n 1- Ler memoria");
         printf("\n 2- Escrever memoria ");
-        printf("\n 3- EstatÃ­sticas ");
+        printf("\n 3- Estatasticas ");
         printf("\n 4- Mostrar memoria Principal");
         printf("\n 5- Mostrar memoria Cache");
         printf("\n 0. Sair");
@@ -307,7 +328,7 @@ int main(void)
         case 0:
             exit(0);
         case 1:
-            lermemoria(Fila, Bloco, MemPrincipal);
+            lermemoria(Fila, Bloco, MemCache, MemPrincipal);
             break;
         case 2:
             break;
