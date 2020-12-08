@@ -265,6 +265,7 @@ int buscaMP(t_Fila *Fila, t_bloco *Blocos, char endereco[])
                 MemoCache.contador_de_acesso = 0;
 
                 MemoCache.bloco_cache = Blocos[bloco];
+
                 DEQUEUE(Fila);
                 (*Fila) = QUEUE(MemoCache, Fila);
             }
@@ -364,7 +365,7 @@ void escreverMemoria(t_Fila *Fila, t_bloco *Blocos)
         int bloco = buscaMP(Fila, Blocos, endereco);
         alterado = alterabloco(Fila, conteudo, endereco);
     }
-    alterado ? printf("\nConteudo alterado com sucesso ") : printf("\nConteudo não alterado\n");
+    alterado ? printf("\nConteudo alterado com sucesso  para %c", conteudo) : printf("\nConteudo não alterado\n");
     getchar();
     getchar();
 }
