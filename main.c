@@ -158,7 +158,10 @@ DEQUEUE(t_Fila *F)
     }
     return Valor;
 }
-
+int buscaIni(t_Fila F)
+{
+    return F.INI;
+}
 void mostramemoriaCache(t_Fila F)
 {
     TELA;
@@ -241,8 +244,27 @@ int buscaemCache(t_Fila FilaCache, char endereco[])
     }
     return achou;
 }
+void alteraBloco(t_bloco bloco, t_celula *MemoriaPrincipal)
+{
+    int achou = 0;
+    for (int i = 0; i < 4; i++)
+    {
+        int contador_celula = 0;
+        while (contador_celula < 2048 && achou != 1)
+        {
+            if (stringCompa(bloco.celula_bloco[i].endereco, MemoriaPrincipal[contador_celula].endereco, TAMST))
+            {
+                achou = 1;
+                MemoriaPrincipal[contador_celula].conteudo = bloco.celula_bloco[i].conteudo;
+            }
 
-int buscaMP(t_Fila *Fila, t_bloco *Blocos, char endereco[])
+            contador_celula++;
+        }
+        achou = 0;
+    }
+}
+
+int buscaMP(t_Fila *Fila, t_bloco *Blocos, t_celula *MemPrincipal, char endereco[])
 {
     int bloco;
     int achouBloco = 0;
@@ -263,9 +285,11 @@ int buscaMP(t_Fila *Fila, t_bloco *Blocos, char endereco[])
                 t_quadro MemoCache;
                 MemoCache.alterado = 0;
                 MemoCache.contador_de_acesso = 0;
-
                 MemoCache.bloco_cache = Blocos[bloco];
-
+                if ((*Fila).linha_quadro[buscaIni(*Fila)].alterado == 1)
+                {
+                    alteraBloco((*Fila).linha_quadro[buscaIni(*Fila)].bloco_cache, MemPrincipal);
+                }
                 DEQUEUE(Fila);
                 (*Fila) = QUEUE(MemoCache, Fila);
             }
@@ -308,7 +332,7 @@ int alterabloco(t_Fila *Fila, char conteudo, char endereco[])
     }
     return achou_alterou;
 }
-void lermemoria(t_Fila *FilaCache, t_bloco *Blocos)
+void lermemoria(t_Fila *FilaCache, t_bloco *Blocos, t_celula *MemPrincipal)
 {
     TELA;
     int achou, cont, num, contCelCache;
@@ -328,14 +352,14 @@ void lermemoria(t_Fila *FilaCache, t_bloco *Blocos)
     }
     else
     {
-        buscaMP(FilaCache, Blocos, endereco);
+        buscaMP(FilaCache, Blocos, MemPrincipal, endereco);
     }
 
     getchar();
     getchar();
 }
 
-void escreverMemoria(t_Fila *Fila, t_bloco *Blocos)
+void escreverMemoria(t_Fila *Fila, t_bloco *Blocos, t_celula *MemPrincipal)
 {
 
     TELA;
@@ -362,7 +386,7 @@ void escreverMemoria(t_Fila *Fila, t_bloco *Blocos)
     }
     else
     {
-        int bloco = buscaMP(Fila, Blocos, endereco);
+        int bloco = buscaMP(Fila, Blocos, MemPrincipal, endereco);
         alterado = alterabloco(Fila, conteudo, endereco);
     }
     alterado ? printf("\nConteudo alterado com sucesso  para %c", conteudo) : printf("\nConteudo não alterado\n");
@@ -435,10 +459,10 @@ int main(void)
         case 0:
             exit(0);
         case 1:
-            lermemoria(&Fila, Bloco);
+            lermemoria(&Fila, Bloco, MemPrincipal);
             break;
         case 2:
-            escreverMemoria(&Fila, Bloco);
+            escreverMemoria(&Fila, Bloco, MemPrincipal);
             break;
         case 3:
             break;
