@@ -242,25 +242,72 @@ int buscaemCache(t_Fila FilaCache, char endereco[])
     return achou;
 }
 
-int bucaemMP(t_celula Celulas[], char endereco[])
+int buscaMP(t_Fila *Fila, t_bloco *Blocos, char endereco[])
 {
-
-    int achou, cont;
-    achou = cont = 0;
-    while ((cont < 2048) && (achou != 1))
+    int bloco;
+    int achouBloco = 0;
+    int contBloco = 0;
+    while (achouBloco == 0 && contBloco < 512)
     {
-        achou = stringCompa(endereco, Celulas[cont].endereco, TAMST);
-        if (achou == 1)
+
+        int contCelulas = 0;
+
+        while (contCelulas < 4 && achouBloco == 0)
         {
-            printf("\nO conteudo do endereço é: %c \n", Celulas[cont].conteudo);
+            if ((stringCompa(endereco, Blocos[contBloco].celula_bloco[contCelulas].endereco, TAMST)) == 1)
+            {
+                achouBloco = 1;
+                bloco = contBloco;
+                printf("\nAchou o bloco %d \n", bloco);
+                printf("\nConteudo do endereco digitado: %c \n", Blocos[contBloco].celula_bloco[contCelulas].conteudo);
+                t_quadro MemoCache;
+                MemoCache.alterado = 0;
+                MemoCache.contador_de_acesso = 0;
+
+                MemoCache.bloco_cache = Blocos[bloco];
+                DEQUEUE(Fila);
+                (*Fila) = QUEUE(MemoCache, Fila);
+            }
+            else
+            {
+                contCelulas++;
+            }
         }
-        cont++;
+        contBloco++;
     }
 
-    return achou;
+    if (achouBloco == 0)
+    {
+        printf("\n\n\tEndereco/bloco nao encontrado\n\tFavor verificar o endereco digitado\n");
+    }
+    if (achouBloco == 1)
+        return bloco;
+    else
+        return -1;
 }
-
-void lermemoria(t_Fila FilaCache, t_celula Celulas[])
+int alterabloco(t_Fila *Fila, char conteudo, char endereco[])
+{
+    int achou_alterou, cont, contCelCache;
+    achou_alterou = cont = contCelCache = 0;
+    while ((contCelCache < 64) && (achou_alterou == 0))
+    {
+        for (int contFila = 0; contFila < TAM; contFila++)
+        {
+            for (int contBloco = 0; contBloco < 4; contBloco++)
+            {
+                if (stringCompa(endereco, (*Fila).linha_quadro[contFila].bloco_cache.celula_bloco[contBloco].endereco, TAMST) == 1)
+                {
+                    achou_alterou = 1;
+                    (*Fila).linha_quadro[contFila].alterado = 1;
+                    (*Fila).linha_quadro[contFila].bloco_cache.celula_bloco[contBloco].conteudo = conteudo;
+                }
+                contCelCache++;
+            }
+        }
+    }
+    return achou_alterou;
+}
+void lermemoria(t_Fila *FilaCache, t_bloco *Blocos)
 {
     TELA;
     int achou, cont, num, contCelCache;
@@ -272,7 +319,7 @@ void lermemoria(t_Fila FilaCache, t_celula Celulas[])
     printf("Endereço digitado: %s\n", endereco);
     fflush(stdin);
 
-    achou = buscaemCache(FilaCache, endereco);
+    achou = buscaemCache((*FilaCache), endereco);
 
     if (achou == 1)
     {
@@ -280,16 +327,7 @@ void lermemoria(t_Fila FilaCache, t_celula Celulas[])
     }
     else
     {
-        achou = bucaemMP(Celulas, endereco);
-
-        if (achou == 1)
-        {
-            printf("\nEndereço não foi encontrado em cache, mas foi encontrdo na memória principal.\n");
-        }
-        else
-        {
-            printf("\nEndereço não foi encontrado em nenhum lugar, favor conferir o endereço digitado.\n");
-        }
+        buscaMP(FilaCache, Blocos, endereco);
     }
 
     getchar();
@@ -303,7 +341,7 @@ void escreverMemoria(t_Fila *Fila, t_bloco *Blocos)
     char endereco[TAMST];
     char conteudo;
     int disponivelnacache = 0;
-
+    int alterado;
     printf("Tá dentro do Escrever Memória\n");
     printf("\n\nDigite o conteudo que deseja inserir(limitado 1 caracter): ");
     fflush(stdin);
@@ -315,53 +353,18 @@ void escreverMemoria(t_Fila *Fila, t_bloco *Blocos)
     fflush(stdin);
     printf("\nConteudo digitado: %c ", conteudo);
     printf("\nEndereço digitado: %s", endereco);
-    // disponivelnacache = buscaemCache(Fila, endereco);
+    disponivelnacache = buscaemCache((*Fila), endereco);
 
     if (disponivelnacache == 1)
     {
-        printf("\nDá para editar em cache");
+        alterado = alterabloco(Fila, conteudo, endereco);
     }
     else
     {
-        int bloco;
-        int achouBloco = 0;
-        int contBloco = 0;
-        while (achouBloco == 0 && contBloco < 512)
-        {
-
-            int contCelulas = 0;
-
-            while (contCelulas < 4 && achouBloco == 0)
-            {
-                if ((stringCompa(endereco, Blocos[contBloco].celula_bloco[contCelulas].endereco, TAMST)) == 1)
-                {
-                    achouBloco = 1;
-                    bloco = contBloco;
-                    printf("\nAchou o bloco %d \n", bloco);
-                    printf("\nConteudo do endereco digitado: %c \n", Blocos[contBloco].celula_bloco[contCelulas].conteudo);
-                    t_quadro MemoCache;
-                    MemoCache.alterado = 0;
-                    MemoCache.contador_de_acesso = 0;
-
-                    MemoCache.bloco_cache = Blocos[bloco];
-                    DEQUEUE(Fila);
-                    (*Fila) = QUEUE(MemoCache, Fila);
-                    // mostramemoriaCache(Fila);
-                }
-                else
-                {
-                    contCelulas++;
-                }
-            }
-            contBloco++;
-        }
-
-        if (achouBloco == 0)
-        {
-            printf("\n\n\tEndereco/bloco nao encontrado\n\tFavor verificar o endereco digitado\n");
-        }
+        int bloco = buscaMP(Fila, Blocos, endereco);
+        alterado = alterabloco(Fila, conteudo, endereco);
     }
-
+    alterado ? printf("\nConteudo alterado com sucesso ") : printf("\nConteudo não alterado\n");
     getchar();
     getchar();
 }
@@ -431,7 +434,7 @@ int main(void)
         case 0:
             exit(0);
         case 1:
-            lermemoria(Fila, MemPrincipal);
+            lermemoria(&Fila, Bloco);
             break;
         case 2:
             escreverMemoria(&Fila, Bloco);
