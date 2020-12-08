@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <locale.h>
 
 #define TAM 16
 #define TAMST 11
@@ -104,40 +105,6 @@ void mostramemoriaPricipal(t_celula MemPrincipal[])
     getchar();
 }
 
-void mostramemoriaCache(t_quadro MemCache[])
-{
-    TELA;
-    printf("\nMostrando MemCache: \n");
-    printf("Alterado");
-    printf("\t Acessos");
-    printf("\tConteudo\t");
-    printf("\tEndereco de inicio do Bloco");
-    for (int mostratodoCache = 0; mostratodoCache < 64;)
-    {
-        for (int i = 0; i < 16; i++)
-        {
-            printf("\n");
-            printf("%d ", MemCache[i].alterado);
-            printf("\t\t\t\t%d \t", MemCache[i].contador_de_acesso);
-            for (int j = 0; j < 4; j++)
-            {
-
-                printf("\t %c", MemCache[i].bloco_cache.celula_bloco[j].conteudo);
-
-                mostratodoCache++;
-            }
-            printf("\t");
-            for (int h = 0; h < TAMST; h++)
-            {
-                printf("%c", MemCache[i].bloco_cache.celula_bloco[0].endereco[h]);
-            }
-        }
-    }
-
-    getchar();
-    getchar();
-}
-
 // Funções da fila
 t_Fila CriarFila(void)
 {
@@ -147,7 +114,7 @@ t_Fila CriarFila(void)
     return F;
 }
 
-int FilaVazia(struct ESTFILA F)
+int FilaVazia(t_Fila F)
 {
     if (F.INI == -1 && F.FIM == -1)
         return 1;
@@ -155,42 +122,74 @@ int FilaVazia(struct ESTFILA F)
         return 0;
 }
 
-t_Fila QUEUE(t_quadro linha_do_quadro, t_Fila F)
+t_Fila QUEUE(t_quadro linha_do_quadro, t_Fila *F)
 {
-    if (FilaVazia(F))
+    if (FilaVazia(*F))
     {
-        F.INI++;
-        F.FIM++;
+        (*F).INI++;
+        (*F).FIM++;
     }
     else
     {
-        F.FIM++;
-        if (F.FIM == TAM && F.INI != 0)
-            F.FIM = 0;
+        (*F).FIM++;
+        if ((*F).FIM == TAM && (*F).INI != 0)
+            (*F).FIM = 0;
     }
-    F.linha_quadro[F.FIM] = linha_do_quadro;
-    return F;
+    (*F).linha_quadro[(*F).FIM] = linha_do_quadro;
+    return (*F);
 }
 
 t_quadro
-DEQUEUE(t_Fila F)
+DEQUEUE(t_Fila *F)
 {
     t_quadro Valor;
-    Valor = F.linha_quadro[F.INI];
-    if (F.INI == F.FIM)
+
+    Valor = F->linha_quadro[F->INI];
+    if (F->INI == F->FIM)
     {
-        F.INI = -1;
-        F.FIM = -1;
+        F->INI = -1;
+        F->FIM = -1;
     }
     else
     {
-        F.INI++;
-        if (F.INI == TAM && F.FIM >= 0)
-            F.INI = 0;
+        F->INI++;
+        if (F->INI == TAM && F->FIM >= 0)
+            F->INI = 0;
     }
     return Valor;
 }
 
+void mostramemoriaCache(t_Fila F)
+{
+    TELA;
+    printf("\nMostrando MemCache: \n");
+    printf("Alterado");
+    printf("\t Acessos");
+    printf("\tConteudo\t");
+    printf("\tEndereco de inicio do Bloco");
+    t_quadro VALOR;
+    int cont = 0;
+    while (!FilaVazia(F))
+    {
+
+        VALOR = DEQUEUE(&F);
+        printf("\n");
+        printf("%d ", VALOR.alterado);
+        printf("\t\t\t\t%d \t", VALOR.contador_de_acesso);
+        for (int j = 0; j < 4; j++)
+        {
+
+            printf("\t %c", VALOR.bloco_cache.celula_bloco[j].conteudo);
+        }
+        printf("\t");
+        for (int h = 0; h < TAMST; h++)
+        {
+            printf("%c", VALOR.bloco_cache.celula_bloco[0].endereco[h]);
+        }
+    }
+    getchar();
+    getchar();
+}
 // Funções EstatÃ­sticas
 int miss = 0;
 int fail = 0;
@@ -297,8 +296,9 @@ void lermemoria(t_Fila FilaCache, t_celula Celulas[])
     getchar();
 }
 
-void escreverMemoria(t_Fila Fila, t_quadro MemoCache[], t_bloco *Blocos)
+void escreverMemoria(t_Fila *Fila, t_bloco *Blocos)
 {
+
     TELA;
     char endereco[TAMST];
     char conteudo;
@@ -313,7 +313,7 @@ void escreverMemoria(t_Fila Fila, t_quadro MemoCache[], t_bloco *Blocos)
     fflush(stdin);
     scanf(" %s", endereco);
     fflush(stdin);
-    printf("\nConteudo inserido: %c ", conteudo);
+    printf("\nConteudo digitado: %c ", conteudo);
     printf("\nEndereço digitado: %s", endereco);
     // disponivelnacache = buscaemCache(Fila, endereco);
 
@@ -323,7 +323,43 @@ void escreverMemoria(t_Fila Fila, t_quadro MemoCache[], t_bloco *Blocos)
     }
     else
     {
-        printf("\n procurando em Blocos\n"); 
+        int bloco;
+        int achouBloco = 0;
+        int contBloco = 0;
+        while (achouBloco == 0 && contBloco < 512)
+        {
+
+            int contCelulas = 0;
+
+            while (contCelulas < 4 && achouBloco == 0)
+            {
+                if ((stringCompa(endereco, Blocos[contBloco].celula_bloco[contCelulas].endereco, TAMST)) == 1)
+                {
+                    achouBloco = 1;
+                    bloco = contBloco;
+                    printf("\nAchou o bloco %d \n", bloco);
+                    printf("\nConteudo do endereco digitado: %c \n", Blocos[contBloco].celula_bloco[contCelulas].conteudo);
+                    t_quadro MemoCache;
+                    MemoCache.alterado = 0;
+                    MemoCache.contador_de_acesso = 0;
+
+                    MemoCache.bloco_cache = Blocos[bloco];
+                    DEQUEUE(Fila);
+                    (*Fila) = QUEUE(MemoCache, Fila);
+                    // mostramemoriaCache(Fila);
+                }
+                else
+                {
+                    contCelulas++;
+                }
+            }
+            contBloco++;
+        }
+
+        if (achouBloco == 0)
+        {
+            printf("\n\n\tEndereco/bloco nao encontrado\n\tFavor verificar o endereco digitado\n");
+        }
     }
 
     getchar();
@@ -332,12 +368,12 @@ void escreverMemoria(t_Fila Fila, t_quadro MemoCache[], t_bloco *Blocos)
 
 int main(void)
 {
-
+    setlocale(LC_ALL, "");
     t_Fila Fila = CriarFila();
 
     t_celula MemPrincipal[2048];
     t_bloco Bloco[512];
-    t_quadro MemCache[16];
+    // t_quadro MemCache[16];
 
     // Iniciar memoria Principal
     int contador_bloco = 0;
@@ -365,15 +401,13 @@ int main(void)
 
     for (int i = 0; i < 16; i++)
     {
-        MemCache[i].alterado = 0;
-        MemCache[i].contador_de_acesso = 0;
+        t_quadro MemoCache;
+        MemoCache.alterado = 0;
+        MemoCache.contador_de_acesso = 0;
 
-        for (int quadro = 0; quadro < 4; quadro++)
-        {
-            MemCache[i].bloco_cache =
-                Bloco[i];
-        }
-        Fila = QUEUE(MemCache[i], Fila);
+        MemoCache.bloco_cache = Bloco[i];
+
+        Fila = QUEUE(MemoCache, &Fila);
     }
 
     // menu
@@ -400,7 +434,7 @@ int main(void)
             lermemoria(Fila, MemPrincipal);
             break;
         case 2:
-            escreverMemoria(Fila, MemCache, Bloco);
+            escreverMemoria(&Fila, Bloco);
             break;
         case 3:
             break;
@@ -408,7 +442,7 @@ int main(void)
             mostramemoriaPricipal(MemPrincipal);
             break;
         case 5:
-            mostramemoriaCache(MemCache);
+            mostramemoriaCache(Fila);
             break;
         default:
             printf("\nOpcao incorreta");
