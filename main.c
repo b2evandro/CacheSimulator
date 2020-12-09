@@ -8,6 +8,10 @@
 #define TAMST 11
 #define TELA system("clear");
 
+int acesso = 0, acerto = 0, faltas = 0, leituras = 0, escrita = 0, acertoEscrit = 0, acetoLeitura = 0, faltaEscrita = 0, faltaLeira = 0;
+
+
+
 // Structs
 typedef struct celula
 {
@@ -167,8 +171,8 @@ void mostramemoriaCache(t_Fila F)
     TELA;
     printf("\nMostrando MemCache: \n");
     printf("Alterado");
-    printf("\t Acessos");
-    printf("\tConteudo\t");
+   
+    printf("\t Conteudo\t");
     printf("\tEndereco de inicio do Bloco");
     t_quadro VALOR;
     int cont = 0;
@@ -177,8 +181,8 @@ void mostramemoriaCache(t_Fila F)
 
         VALOR = DEQUEUE(&F);
         printf("\n");
-        printf("%d ", VALOR.alterado);
-        printf("\t\t\t\t%d \t", VALOR.contador_de_acesso);
+        printf("%d\t\t", VALOR.alterado);
+        
         for (int j = 0; j < 4; j++)
         {
 
@@ -225,6 +229,9 @@ int stringCompa(char string1[], char string2[], int tam)
 }
 int buscaemCache(t_Fila FilaCache, char endereco[])
 {
+
+    acesso++;
+    leituras++;
     int achou, cont, contCelCache;
     achou = cont = contCelCache = 0;
     while ((contCelCache < 64) && (achou == 0))
@@ -235,12 +242,19 @@ int buscaemCache(t_Fila FilaCache, char endereco[])
             {
                 if (stringCompa(endereco, (FilaCache).linha_quadro[contFila].bloco_cache.celula_bloco[contBloco].endereco, TAMST) == 1)
                 {
+                    acetoLeitura++;
+                    acerto++;
                     achou = 1;
                     printf("\nO conteudo do endereço é: %c \n", (FilaCache).linha_quadro[contFila].bloco_cache.celula_bloco[contBloco].conteudo);
                 }
                 contCelCache++;
             }
         }
+    }
+    if (achou == 0)
+    {
+        faltas++;
+        faltaLeira++;
     }
     return achou;
 }
@@ -255,6 +269,7 @@ void alteraBloco(t_bloco bloco, t_celula *MemoriaPrincipal)
             if (stringCompa(bloco.celula_bloco[i].endereco, MemoriaPrincipal[contador_celula].endereco, TAMST))
             {
                 achou = 1;
+
                 MemoriaPrincipal[contador_celula].conteudo = bloco.celula_bloco[i].conteudo;
             }
 
@@ -266,9 +281,11 @@ void alteraBloco(t_bloco bloco, t_celula *MemoriaPrincipal)
 
 int buscaMP(t_Fila *Fila, t_bloco *Blocos, t_celula *MemPrincipal, char endereco[])
 {
+
     int bloco;
     int achouBloco = 0;
     int contBloco = 0;
+    Blocos[(*Fila).linha_quadro[buscaIni(*Fila)].bloco_cache.bloco] = (*Fila).linha_quadro[buscaIni(*Fila)].bloco_cache;
     while (achouBloco == 0 && contBloco < 512)
     {
 
@@ -278,6 +295,7 @@ int buscaMP(t_Fila *Fila, t_bloco *Blocos, t_celula *MemPrincipal, char endereco
         {
             if ((stringCompa(endereco, Blocos[contBloco].celula_bloco[contCelulas].endereco, TAMST)) == 1)
             {
+
                 achouBloco = 1;
                 bloco = contBloco;
                 printf("\nAchou o bloco %d \n", bloco);
@@ -285,9 +303,11 @@ int buscaMP(t_Fila *Fila, t_bloco *Blocos, t_celula *MemPrincipal, char endereco
                 t_quadro MemoCache;
                 MemoCache.alterado = 0;
                 MemoCache.contador_de_acesso = 0;
+
                 MemoCache.bloco_cache = Blocos[bloco];
                 if ((*Fila).linha_quadro[buscaIni(*Fila)].alterado == 1)
                 {
+
                     alteraBloco((*Fila).linha_quadro[buscaIni(*Fila)].bloco_cache, MemPrincipal);
                 }
                 DEQUEUE(Fila);
@@ -361,7 +381,7 @@ void lermemoria(t_Fila *FilaCache, t_bloco *Blocos, t_celula *MemPrincipal)
 
 void escreverMemoria(t_Fila *Fila, t_bloco *Blocos, t_celula *MemPrincipal)
 {
-
+    acesso++;
     TELA;
     char endereco[TAMST];
     char conteudo;
@@ -371,6 +391,8 @@ void escreverMemoria(t_Fila *Fila, t_bloco *Blocos, t_celula *MemPrincipal)
     printf("\n\nDigite o conteudo que deseja inserir(limitado 1 caracter): ");
     fflush(stdin);
     scanf(" %c", &conteudo);
+    escrita++;
+
     fflush(stdin);
     printf("\nDigite o endereco que deseja editar(limitado 11 caracter): ");
     fflush(stdin);
@@ -389,7 +411,35 @@ void escreverMemoria(t_Fila *Fila, t_bloco *Blocos, t_celula *MemPrincipal)
         int bloco = buscaMP(Fila, Blocos, MemPrincipal, endereco);
         alterado = alterabloco(Fila, conteudo, endereco);
     }
-    alterado ? printf("\nConteudo alterado com sucesso  para %c", conteudo) : printf("\nConteudo não alterado\n");
+    if (alterado == 1)
+    {
+        acertoEscrit++;
+        printf("\nConteudo alterado com sucesso  para %c", conteudo);
+    }
+    else
+    {
+        faltaEscrita++;
+        printf("\nConteudo não alterado\n");
+    }
+    getchar();
+    getchar();
+}
+
+void mostraEstatistica()
+{
+
+    TELA;
+    printf("\n -----------------------------------------------------\n");
+    printf(" Numero de Acessos %d \n", acesso);
+    printf(" Numero de Acertos %d \n", acerto);
+    printf(" Numero de Faltas %d \n", faltas);
+    printf(" Numero de Leituras %d \n", leituras);
+    printf(" Numero de Escritas %d \n", escrita);
+    printf(" Numero de Acertos na Leitura %d \n", acetoLeitura);
+    printf(" Numero de Acertos na Escrita %d \n", acertoEscrit);
+    printf(" Numero de Faltas na Leitura %d \n", faltaLeira);
+    printf(" Numero de Faltas na Escrita %d \n", faltaEscrita);
+    printf("\n -----------------------------------------------------\n");
     getchar();
     getchar();
 }
@@ -401,7 +451,6 @@ int main(void)
 
     t_celula MemPrincipal[2048];
     t_bloco Bloco[512];
-    // t_quadro MemCache[16];
 
     // Iniciar memoria Principal
     int contador_bloco = 0;
@@ -465,6 +514,7 @@ int main(void)
             escreverMemoria(&Fila, Bloco, MemPrincipal);
             break;
         case 3:
+            mostraEstatistica();
             break;
         case 4:
             mostramemoriaPricipal(MemPrincipal);
