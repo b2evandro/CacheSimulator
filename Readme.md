@@ -46,15 +46,15 @@ Opções de Menu
 
 As estatísticas abaixo devem ser implementadas:
 
-3.1 Numero de Acessos
-3.2 Numero de Acertos
-3.3 Numero de Faltas
-3.4 Numero de Leituras
-3.5 Numero de Escritas
-3.6 Numero de Acertos na Leitura
-3.7 Numero de Acertos na Escrita
-3.8 Numero de Faltas na Leitura
-3.9 Numero de Faltas na Escrita
+1. Numero de Acessos
+1. Numero de Acertos
+1. Numero de Faltas
+1. Numero de Leituras
+1. Numero de Escritas
+1. Numero de Acertos na Leitura
+1. Numero de Acertos na Escrita
+1. Numero de Faltas na Leitura
+1. Numero de Faltas na Escrita
 
 
 Pontuação
@@ -74,6 +74,9 @@ Observações:
 O tamanho do quadro deve ser definido pelo grupo.
 
 Os dados de endereço e rótulo devem ser exibidos em binário.
+
 O conteúdo de cada célula é um char, que pode ser preenchido aleatoriamente na memória principal.
+
 Caso seja necessário adição de variáveis ou modificação no tamanho dos atributos nas estruturas, deve ser feito. Mas sempre respeitando o tamanho da cache, da memória principal e das células.
+
 Duplas serão definidas e sorteados os temas durante a conferência.
