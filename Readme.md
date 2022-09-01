@@ -1,5 +1,5 @@
 # Trabalho 2
-
+![Codigo sendo executado](CPT2209011038-514x551.gif)
 ## Criar Simulador de memória cache
 
 * Politica de Mapeamento Direto:
